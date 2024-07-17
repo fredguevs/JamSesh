@@ -1,5 +1,7 @@
 // models/postModel.js
-import pool from '../config/db.js';
+import pool from '../../config/db.js';
+
+// need a way to upload posts (image, videos)
 
 const createPostTable = async () => {
   const queryText = `

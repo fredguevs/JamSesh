@@ -1,5 +1,5 @@
 // controllers/userController.js
-import { insertUser, getAllUsers, getUserByUsername, updateUser, deleteUser, searchUsernames } from '../models/userModel.js';
+import { insertUser, getAllUsers, getUserByUsername, updateUser, deleteUser, searchUsernames } from '../../models/user/userModel.js';
 
 const addUser = async (req, res) => {
   const { username, fullname, email, profilePictureUrl, password } = req.body;

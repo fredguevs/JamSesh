@@ -1,4 +1,6 @@
-import pool from '../config/db.js';
+import pool from '../../config/db.js';
+
+// TODO: need to figure out how to upload audios
 
 const createAudioTable = async () => {
   const queryText = `

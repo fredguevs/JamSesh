@@ -1,5 +1,5 @@
 // controllers/postController.js
-import { insertPost, getAllPosts, getPostsByUser, getPostsById, deletePost } from '../models/postModel.js';
+import { insertPost, getAllPosts, getPostsByUser, getPostsById, deletePost } from '../../models/post/postModel.js';
 
 const addPost = async (req, res) => {
   const { owner, imageUrl, videoUrl } = req.body;

@@ -1,21 +1,21 @@
-import { addPostLike, deletePostLike, getPostLikes } from '../models/postLikesModel.js';
+import { addAudioLike, deleteAudioLike, getAudioLikes } from '../../models/audio/audioLikesModel.js';
 
-export const createLike = async (req, res) => {
-  const { owner, postid } = req.body;
+export const createAudioLike = async (req, res) => {
+  const { owner, audioid } = req.body;
 
   try {
-    await addPostLike(owner, postid);
+    await addAudioLike(owner, audioid);
     res.status(201).send('Like added successfully');
   } catch (err) {
     res.status(500).send('Error adding like');
   }
 };
 
-export const removeLike = async (req, res) => {
-  const { owner, postid } = req.body;
+export const removeAudioLike = async (req, res) => {
+  const { owner, audioid } = req.body;
 
   try {
-    const success = await deletePostLike(owner, postid);
+    const success = await deleteAudioLike(owner, audioid);
     if (success) {
       res.status(200).send('Like removed successfully');
     } else {
@@ -26,12 +26,12 @@ export const removeLike = async (req, res) => {
   }
 };
 
-export const getLikes = async (req, res) => {
-  const { postid } = req.params;
+export const fetchAudioLikes = async (req, res) => {
+  const { audioid } = req.params;
   const owner = req.user ? req.user.username : null;
 
   try {
-    const likes = await getPostLikes(postid, owner);
+    const likes = await getAudioLikes(audioid, owner);
     const userLiked = likes.some(like => like.owner === owner);
     res.status(200).json({ likes, userLiked });
   } catch (err) {

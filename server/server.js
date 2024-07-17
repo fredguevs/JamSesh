@@ -18,11 +18,11 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 
-app.use('/users', userRoutes);
-app.use('/posts', postRoutes);
-app.use('/audios', audioRoutes);
-app.use('/api', postLikesRoutes);
-app.use('/api', audioLikesRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/audios', audioRoutes);
+app.use('/api/v1/post-likes', postLikesRoutes);
+app.use('/api/v1/audio-likes', audioLikesRoutes);
 
 const initializeDatabase = async () => {
   await createUserTable();

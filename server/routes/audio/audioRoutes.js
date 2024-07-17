@@ -1,5 +1,5 @@
 import express from 'express';
-import { addAudio, fetchAudios, fetchAudioById, fetchAudiosByUser, removeAudio } from '../controllers/audioController.js';
+import { addAudio, fetchAudios, fetchAudioById, fetchAudiosByUser, removeAudio } from '../../controllers/audio/audioController.js';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { createAudioLike, removeAudioLike, fetchAudioLikes } from '../controllers/audioLikesController.js';
+import { createAudioLike, removeAudioLike, fetchAudioLikes } from '../../controllers/audio/audioLikesController.js';
 
 const router = express.Router();
 

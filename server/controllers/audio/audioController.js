@@ -1,4 +1,4 @@
-import { insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio } from '../models/audioModel.js';
+import { insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio } from '../../models/audio/audioModel.js';
 
 const addAudio = async (req, res) => {
   const { title, url, owner } = req.body;

@@ -1,5 +1,8 @@
 // models/userModel.js
-import pool from '../config/db.js';
+import pool from '../../config/db.js';
+
+// TODO: need to implement authentication
+// need a way to upload profile pic
 
 const createUserTable = async () => {
   const queryText = `
