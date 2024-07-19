@@ -1,5 +1,4 @@
-// controllers/userController.js
-import { insertUser, getAllUsers, getUserByUsername, updateUser, deleteUser, searchUsernames } from '../../models/user/userModel.js';
+import { insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames } from '../../models/user/userModel.js';
 
 const addUser = async (req, res) => {
   const { username, fullname, email, profilePictureUrl, password } = req.body;
@@ -33,6 +32,9 @@ const fetchUserByUsername = async (req, res) => {
 const modifyUser = async (req, res) => {
   const { username } = req.params;
   const { fullname, email, profilePictureUrl, password } = req.body;
+  if (req.user.username !== username) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   try {
     const updatedUser = await updateUser(username, fullname, email, profilePictureUrl, password);
     res.status(200).json({ message: 'Successfully updated user', user: updatedUser });
@@ -43,6 +45,9 @@ const modifyUser = async (req, res) => {
 
 const removeUser = async (req, res) => {
   const { username } = req.params;
+  if (req.user.username !== username) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   try {
     const deletedUser = await deleteUser(username);
     res.status(200).json({ message: 'Successfully deleted user', user: deletedUser });
@@ -52,7 +57,7 @@ const removeUser = async (req, res) => {
 };
 
 const searchUsers = async (req, res) => {
-  const { query } = req.query; // Get the search query from the request
+  const { query } = req.query;
 
   try {
     const results = await searchUsernames(query);
@@ -62,4 +67,21 @@ const searchUsers = async (req, res) => {
   }
 };
 
-export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers };
+const createAccount = async (req, res) => {
+  const { email, username, fullname, password } = req.body;
+
+  try {
+    const existingUser = await getUserByEmail(email);
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already associated with an account' });
+    }
+
+    const newUser = await insertUser(username, fullname, email, null, password);
+    res.status(201).json({ message: 'Account created successfully', user: newUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount };

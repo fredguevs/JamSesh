@@ -1,7 +1,8 @@
 import { addAudioLike, deleteAudioLike, getAudioLikes } from '../../models/audio/audioLikesModel.js';
 
 export const createAudioLike = async (req, res) => {
-  const { owner, audioid } = req.body;
+  const { audioid } = req.body;
+  const owner = req.user.username;
 
   try {
     await addAudioLike(owner, audioid);
@@ -12,7 +13,8 @@ export const createAudioLike = async (req, res) => {
 };
 
 export const removeAudioLike = async (req, res) => {
-  const { owner, audioid } = req.body;
+  const { audioid } = req.body;
+  const owner = req.user.username;
 
   try {
     const success = await deleteAudioLike(owner, audioid);
@@ -22,7 +24,7 @@ export const removeAudioLike = async (req, res) => {
       res.status(404).send('Like not found');
     }
   } catch (err) {
-    res.status(500).send('Error removing like');
+    res.status_500.send('Error removing like');
   }
 };
 

@@ -1,16 +1,21 @@
 import { insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio } from '../../models/audio/audioModel.js';
 
-const addAudio = async (req, res) => {
-  const { title, url, owner } = req.body;
+export const createAudio = async (req, res) => {
+  const { title, owner } = req.body;
+  if (req.user.username !== owner) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  const url = req.file ? req.file.path : null;
+
   try {
     const newAudio = await insertAudio(title, url, owner);
-    res.status(201).json({ message: 'Successfully added audio', audio: newAudio });
+    res.status(201).json({ message: 'Audio created successfully', audio: newAudio });
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-const fetchAudios = async (req, res) => {
+export const fetchAudios = async (req, res) => {
   try {
     const audios = await getAllAudios();
     res.status(200).json(audios);
@@ -19,7 +24,7 @@ const fetchAudios = async (req, res) => {
   }
 };
 
-const fetchAudioById = async (req, res) => {
+export const fetchAudioById = async (req, res) => {
   const { audioid } = req.params;
   try {
     const audio = await getAudioById(audioid);
@@ -29,7 +34,7 @@ const fetchAudioById = async (req, res) => {
   }
 };
 
-const fetchAudiosByUser = async (req, res) => {
+export const fetchAudiosByUser = async (req, res) => {
   const { username } = req.params;
   try {
     const audios = await getAudiosByUser(username);
@@ -39,14 +44,16 @@ const fetchAudiosByUser = async (req, res) => {
   }
 };
 
-const removeAudio = async (req, res) => {
+export const removeAudio = async (req, res) => {
   const { audioid } = req.params;
   try {
+    const audio = await getAudioById(audioid);
+    if (req.user.username !== audio.owner) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
     const deletedAudio = await deleteAudio(audioid);
-    res.status(200).json({ message: 'Successfully deleted audio', audio: deletedAudio });
+    res.status(200).json({ message: 'Audio deleted successfully', audio: deletedAudio });
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-export { addAudio, fetchAudios, fetchAudioById, fetchAudiosByUser, removeAudio };

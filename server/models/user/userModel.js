@@ -1,8 +1,4 @@
-// models/userModel.js
 import pool from '../../config/db.js';
-
-// TODO: need to implement authentication
-// need a way to upload profile pic
 
 const createUserTable = async () => {
   const queryText = `
@@ -60,6 +56,17 @@ const getUserByUsername = async (username) => {
   }
 };
 
+const getUserByEmail = async (email) => {
+  const queryText = 'SELECT * FROM users WHERE email = $1';
+  try {
+    const res = await pool.query(queryText, [email]);
+    return res.rows[0];
+  } catch (err) {
+    console.error('Error fetching user by email', err);
+    throw err;
+  }
+};
+
 const updateUser = async (username, fullname, email, profilePictureUrl, password) => {
   const queryText = `
     UPDATE users
@@ -80,6 +87,16 @@ const updateUser = async (username, fullname, email, profilePictureUrl, password
 const deleteUser = async (username) => {
   const queryText = 'DELETE FROM users WHERE username = $1 RETURNING *';
   try {
+    const user = await getUserByUsername(username);
+
+    if (user && user.profile_picture_url) {
+      fs.unlink(path.join(__dirname, '..', '..', user.profile_picture_url), (err) => {
+        if (err) {
+          console.error('Error deleting profile picture file:', err);
+        }
+      });
+    }
+
     const res = await pool.query(queryText, [username]);
     return res.rows[0];
   } catch (err) {
@@ -94,7 +111,7 @@ const searchUsernames = async (query) => {
     FROM users
     WHERE username ILIKE $1
   `;
-  const values = [`%${query}%`]; // Use ILIKE for case-insensitive search
+  const values = [`%${query}%`];
 
   try {
     const res = await pool.query(queryText, values);
@@ -105,4 +122,4 @@ const searchUsernames = async (query) => {
   }
 };
 
-export { createUserTable, insertUser, getAllUsers, getUserByUsername, updateUser, deleteUser, searchUsernames };
+export { createUserTable, insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames };

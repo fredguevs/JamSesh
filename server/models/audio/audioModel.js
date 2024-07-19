@@ -2,7 +2,7 @@ import pool from '../../config/db.js';
 
 // TODO: need to figure out how to upload audios
 
-const createAudioTable = async () => {
+export const createAudioTable = async () => {
   const queryText = `
     CREATE TABLE IF NOT EXISTS audios (
       created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -22,7 +22,7 @@ const createAudioTable = async () => {
   }
 };
 
-const insertAudio = async (title, url, owner) => {
+export const insertAudio = async (title, url, owner) => {
   const queryText = `
     INSERT INTO audios (title, url, owner)
     VALUES ($1, $2, $3)
@@ -38,7 +38,7 @@ const insertAudio = async (title, url, owner) => {
   }
 };
 
-const getAllAudios = async () => {
+export const getAllAudios = async () => {
   try {
     const res = await pool.query('SELECT * FROM audios');
     return res.rows;
@@ -48,7 +48,7 @@ const getAllAudios = async () => {
   }
 };
 
-const getAudioById = async (audioid) => {
+export const getAudioById = async (audioid) => {
   const queryText = 'SELECT * FROM audios WHERE audioid = $1';
   try {
     const res = await pool.query(queryText, [audioid]);
@@ -59,7 +59,7 @@ const getAudioById = async (audioid) => {
   }
 };
 
-const getAudiosByUser = async (username) => {
+export const getAudiosByUser = async (username) => {
   const queryText = 'SELECT * FROM audios WHERE owner = $1';
   try {
     const res = await pool.query(queryText, [username]);
@@ -70,15 +70,29 @@ const getAudiosByUser = async (username) => {
   }
 };
 
-const deleteAudio = async (audioid) => {
+export const deleteAudio = async (audioid) => {
   const queryText = 'DELETE FROM audios WHERE audioid = $1 RETURNING *';
   try {
-    const res = await pool.query(queryText, [audioid]);
-    return res.rows[0];
+    // Retrieve the audio to get the file path
+    const audio = await getAudioById(audioid);
+
+    if (audio) {
+      // Delete the audio file if it exists
+      if (audio.url) {
+        fs.unlink(path.join(__dirname, '..', '..', audio.url), (err) => {
+          if (err) {
+            console.error('Error deleting audio file:', err);
+          }
+        });
+      }
+
+      // Delete the audio from the database
+      const res = await pool.query(queryText, [audioid]);
+      return res.rows[0];
+    }
   } catch (err) {
     console.error('Error deleting audio', err);
     throw err;
   }
 };
 
-export { createAudioTable, insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio };

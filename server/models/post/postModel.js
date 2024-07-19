@@ -1,9 +1,11 @@
 // models/postModel.js
 import pool from '../../config/db.js';
+import fs from 'fs';
+import path from 'path';
 
 // need a way to upload posts (image, videos)
 
-const createPostTable = async () => {
+export const createPostTable = async () => {
   const queryText = `
     CREATE TABLE IF NOT EXISTS posts (
       postid SERIAL PRIMARY KEY,
@@ -22,7 +24,7 @@ const createPostTable = async () => {
   }
 };
 
-const insertPost = async (owner, imageUrl, videoUrl) => {
+export const insertPost = async (owner, imageUrl, videoUrl) => {
   const queryText = `
     INSERT INTO posts (owner, image_url, video_url)
     VALUES ($1, $2, $3)
@@ -38,7 +40,7 @@ const insertPost = async (owner, imageUrl, videoUrl) => {
   }
 };
 
-const getAllPosts = async () => {
+export const getAllPosts = async () => {
   try {
     const res = await pool.query('SELECT * FROM posts');
     return res.rows;
@@ -48,7 +50,7 @@ const getAllPosts = async () => {
   }
 };
 
-const getPostsByUser = async (username) => {
+export const getPostsByUser = async (username) => {
   const queryText = `
     SELECT * FROM posts WHERE owner = $1
   `;
@@ -61,7 +63,7 @@ const getPostsByUser = async (username) => {
   }
 };
 
-const getPostsById = async (postid) => {
+export const getPostsById = async (postid) => {
   const queryText = `
     SELECT * FROM posts WHERE postid = $1
   `;
@@ -74,17 +76,39 @@ const getPostsById = async (postid) => {
   }
 };
 
-const deletePost = async (postid) => {
+export const deletePost = async (postid) => {
   const queryText = `
     DELETE FROM posts WHERE postid = $1 RETURNING *
   `;
   try {
-    const res = await pool.query(queryText, [postid]);
-    return res.rows[0];
+    // Retrieve the post to get the media paths
+    const post = await getPostsById(postid);
+
+    if (post) {
+      // Delete media files if they exist
+      if (post.image_url) {
+        fs.unlink(path.join(__dirname, '..', '..', post.image_url), (err) => {
+          if (err) {
+            console.error('Error deleting image file:', err);
+          }
+        });
+      }
+      if (post.video_url) {
+        fs.unlink(path.join(__dirname, '..', '..', post.video_url), (err) => {
+          if (err) {
+            console.error('Error deleting video file:', err);
+          }
+        });
+      }
+
+      // Delete the post from the database
+      const res = await pool.query(queryText, [postid]);
+      return res.rows[0];
+    }
   } catch (err) {
     console.error('Error deleting post', err);
     throw err;
   }
 };
 
-export { createPostTable, insertPost, getAllPosts, getPostsByUser, getPostsById, deletePost };
+

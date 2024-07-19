@@ -1,7 +1,8 @@
 import { addPostLike, deletePostLike, getPostLikes } from '../../models/post/postLikesModel.js';
 
 export const createLike = async (req, res) => {
-  const { owner, postid } = req.body;
+  const { postid } = req.body;
+  const owner = req.user.username;
 
   try {
     await addPostLike(owner, postid);
@@ -12,7 +13,8 @@ export const createLike = async (req, res) => {
 };
 
 export const removeLike = async (req, res) => {
-  const { owner, postid } = req.body;
+  const { postid } = req.body;
+  const owner = req.user.username;
 
   try {
     const success = await deletePostLike(owner, postid);
@@ -38,9 +40,3 @@ export const getLikes = async (req, res) => {
     res.status(500).send('Error getting likes');
   }
 };
-
-/*
- TODO: For both AudioLikes and PostLikes I need to implement a 
- function that gets the likeid of a given post where the owner
- is the logged user
-*/
