@@ -1,44 +1,25 @@
-import React, {useState} from 'react';
-import AppHeader from '../components/AppHeader';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useSession } from '../hooks/SessionContext';
+import axios from 'axios';
+
 
 export default function UserPage() {
-  
   const [follow, setFollow] = useState(false);
   const [showPosts, setShowPosts] = useState(true);
   const [showAudios, setShowAudios] = useState(false);
+  const [user, setUser] = useState({});
+  const { username } = useParams(); // Change this to the actual parameter name you are using
+  const navigate = useNavigate();
+  const { session } = useSession();
 
+  useEffect(() => {
+    axios.get(`http://localhost:5000/api/v1/users/${username}`)
+      .then(response => setUser(response.data))
+      .catch(error => console.log(error));
+  }, [username]);
 
-  // TODO: implement fetch users
-  // - Post and Audio urls are simplified
-  //    - need to design and build the schemas
-  const user = {
-    image: 'path/to/profile-pic.jpg',
-    username: 'john_doe',
-    fullname: 'John Doe',
-    bio: 'Software Developer at XYZ',
-    posts: [
-      {
-        id: '1', 
-        url: 'post1'
-      },
-      {
-        id: '2', 
-        url: 'post2'
-      }
-    ],
-    audios: [
-      {
-        id: '3', 
-        url: 'audio1'
-      },
-      {
-        id: '4', 
-        url: 'audio2'
-      }
-    ]
-  };
-
-  function handleFollow(){
+  function handleFollow() {
     // TODO: implement api endpoint for follow
     setFollow(prevFollow => !prevFollow);
   }
@@ -53,9 +34,14 @@ export default function UserPage() {
     setShowAudios(true);
   }
 
+  function handleEditProfile() {
+    // Redirect to edit profile page
+    navigate(`/edit-profile/${username}`);
+  }
+
+
   return (
     <>
-      <AppHeader />
       <div className='UserHeader'>
         <div className='Profile-body'>
           <img src={user.image} alt={`${user.username}'s profile`} />
@@ -63,6 +49,11 @@ export default function UserPage() {
           <h2>{user.fullname}</h2>
           <p>{user.bio}</p>
         </div>
+        {session && session.username === user.username && (
+          <div className='edit-button'>
+            <button onClick={handleEditProfile}>Edit Profile</button>
+          </div>
+        )}
         <div className='follow-button'>
           <button onClick={handleFollow}>
             {follow ? 'Unfollow' : 'Follow'}
@@ -79,7 +70,7 @@ export default function UserPage() {
         </button>
       </div>
 
-      {showPosts && (
+      {showPosts && user.posts && (
         <div className='UserPhotos'>
           <div className='Posts'>
             {user.posts.map(post => (
@@ -91,7 +82,7 @@ export default function UserPage() {
         </div>
       )}
 
-      {showAudios && (
+      {showAudios && user.audios && (
         <div className='UserAudios'>
           <div className='Audios'>
             {user.audios.map(audio => (

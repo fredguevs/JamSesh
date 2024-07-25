@@ -1,23 +1,23 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './components/Login';
-import Protected from './components/Protected';
-import Logout from './components/Logout';
-import CreateAccount from './components/CreateAccount';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { SessionProvider } from './hooks/SessionContext.js';
+import AppHeader from './components/Header.js';
+import LoginForm from './components/Login.js';
+import UserProfile from './pages/User.js';
 
-function App() {
+const App = () => {
   return (
-    <Router>
-      <div className="App">
+    <SessionProvider>
+      <Router>
+        <AppHeader />
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/protected" element={<Protected />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/create-account" element={<CreateAccount />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/user/:username" element={<UserProfile />} />
+          {/* Add more routes as needed */}
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </SessionProvider>
   );
-}
+};
 
 export default App;
