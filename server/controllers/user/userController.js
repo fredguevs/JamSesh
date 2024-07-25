@@ -70,6 +70,7 @@ const searchUsers = async (req, res) => {
 
 const createAccount = async (req, res) => {
   const { email, username, fullname, password } = req.body;
+  const profilePictureUrl = req.file ? req.file.path : null;
 
   try {
     const existingUser = await getUserByEmail(email);
@@ -78,7 +79,7 @@ const createAccount = async (req, res) => {
       return res.status(400).json({ error: 'Email already associated with an account' });
     }
 
-    const newUser = await insertUser(username, fullname, email, null, password);
+    const newUser = await insertUser(username, fullname, email, profilePictureUrl, password);
     res.status(201).json({ message: 'Account created successfully', user: newUser });
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });

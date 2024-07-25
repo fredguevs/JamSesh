@@ -3,8 +3,6 @@ import pool from '../../config/db.js';
 import fs from 'fs';
 import path from 'path';
 
-// need a way to upload posts (image, videos)
-
 export const createPostTable = async () => {
   const queryText = `
     CREATE TABLE IF NOT EXISTS posts (
@@ -81,11 +79,9 @@ export const deletePost = async (postid) => {
     DELETE FROM posts WHERE postid = $1 RETURNING *
   `;
   try {
-    // Retrieve the post to get the media paths
     const post = await getPostsById(postid);
 
     if (post) {
-      // Delete media files if they exist
       if (post.image_url) {
         fs.unlink(path.join(__dirname, '..', '..', post.image_url), (err) => {
           if (err) {
@@ -101,7 +97,6 @@ export const deletePost = async (postid) => {
         });
       }
 
-      // Delete the post from the database
       const res = await pool.query(queryText, [postid]);
       return res.rows[0];
     }
@@ -110,5 +105,3 @@ export const deletePost = async (postid) => {
     throw err;
   }
 };
-
-

@@ -1,18 +1,15 @@
+// controllers/post/postController.js
 import { insertPost, getAllPosts, getPostsByUser, getPostsById, deletePost } from '../../models/post/postModel.js';
 
 export const createPost = async (req, res) => {
   const { owner } = req.body;
-  if (req.user.username !== owner) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  const imageUrl = req.files.image ? req.files.image[0].path : null;
-  const videoUrl = req.files.video ? req.files.video[0].path : null;
-
+  const image = req.files['image'] ? req.files['image'][0].path : null;
+  const video = req.files['video'] ? req.files['video'][0].path : null;
   try {
-    const newPost = await insertPost(owner, imageUrl, videoUrl);
-    res.status(201).json({ message: 'Post created successfully', post: newPost });
+    const newPost = await insertPost(owner, image, video);
+    res.status(201).json({ message: 'Successfully created post', post: newPost });
   } catch (err) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Something went wrong!' });
   }
 };
 

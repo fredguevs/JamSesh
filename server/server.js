@@ -37,9 +37,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
+// Enable CORS for all routes including static files
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true
+  credentials: true,
 }));
 
 const pgSession = connectPgSimple(session);
@@ -60,7 +61,15 @@ app.use(session({
   }
 }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files from the 'uploads' directory
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Cross-Origin-Resource-Policy', 'same-site');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
+
+
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/audios', audioRoutes);
@@ -68,20 +77,16 @@ app.use('/api/v1/post-likes', postLikesRoutes);
 app.use('/api/v1/audio-likes', audioLikesRoutes);
 app.use('/api/v1', uploadTestRoutes);
 
-// Add a direct session test route here
 app.get('/api/v1/session', (req, res) => {
-
   if (req.session && req.session.user) {
-
     res.status(200).json(req.session.user);
   } else {
-    console.log('No active session, returning 404 status.');
     res.status(404).json({ message: 'No active session' });
   }
 });
 
 app.post('/api/v1/logout', (req, res) => {
-  console.log('logout api called')
+  console.log('logout api called');
   req.session.destroy(err => {
     if (err) {
       console.error('Error destroying session:', err);
