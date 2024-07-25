@@ -1,7 +1,7 @@
 import pool from '../../config/db.js';
 
 const createUserTable = async () => {
-  const queryText = `
+  const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
       created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
       username VARCHAR(40) PRIMARY KEY,
@@ -11,9 +11,15 @@ const createUserTable = async () => {
       password VARCHAR(256) NOT NULL
     )
   `;
+
+  const createIndexQuery = `
+    CREATE UNIQUE INDEX IF NOT EXISTS unique_username_idx ON users (LOWER(username))
+  `;
+
   try {
-    await pool.query(queryText);
-    console.log('Users table created');
+    await pool.query(createTableQuery);
+    await pool.query(createIndexQuery);
+    console.log('Users table and unique index created');
   } catch (err) {
     console.error('Error creating users table', err);
   }
@@ -30,8 +36,12 @@ const insertUser = async (username, fullname, email, profilePictureUrl, password
     const res = await pool.query(queryText, values);
     return res.rows[0];
   } catch (err) {
-    console.error('Error inserting user', err);
-    throw err;
+    if (err.code === '23505') { // Unique violation
+      throw new Error('Username already exists');
+    } else {
+      console.error('Error inserting user', err);
+      throw err;
+    }
   }
 };
 
@@ -46,9 +56,10 @@ const getAllUsers = async () => {
 };
 
 const getUserByUsername = async (username) => {
-  const queryText = 'SELECT * FROM users WHERE username = $1';
+  const queryText = 'SELECT * FROM users WHERE username ILIKE $1';
   try {
     const res = await pool.query(queryText, [username]);
+    console.log(`Fetched`, username);
     return res.rows[0];
   } catch (err) {
     console.error('Error fetching user by username', err);

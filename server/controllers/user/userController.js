@@ -21,6 +21,7 @@ const fetchUsers = async (req, res) => {
 
 const fetchUserByUsername = async (req, res) => {
   const { username } = req.params;
+  console.log('Attemping to fetch', username);
   try {
     const user = await getUserByUsername(username);
     res.status(200).json(user);
@@ -84,4 +85,31 @@ const createAccount = async (req, res) => {
   }
 };
 
-export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount };
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+  console.log('Login attempt with username:', username);
+
+  const user = await getUserByUsername(username); // Replace this with your actual user validation logic
+  if (user && user.password === password) {
+    req.session.user = {
+      username: user.username,
+      fullname: user.fullname,
+      email: user.email,
+    };
+
+    req.session.save(err => {
+      if (err) {
+        console.error('Failed to save session:', err);
+        return res.status(500).json({ error: 'Failed to save session' });
+      }
+      return res.status(200).json({ message: 'Login successful', user: req.session.user });
+    });
+  } else {
+    console.log('Incorrect username or password');
+    res.status(403).json({ message: 'Incorrect username or password' });
+  }
+};
+
+
+
+export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount, loginUser};
