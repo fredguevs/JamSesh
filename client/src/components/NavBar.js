@@ -11,13 +11,13 @@ const NavBar = () => {
   };
 
   const handleUserPage = () => {
-    navigate(`/profile`);
+    navigate(`/user/${session.username}`);
   };
 
   const handleLogin = () => {
     navigate('/login');
   };
-
+  
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -36,11 +36,13 @@ const NavBar = () => {
       <button onClick={handleHome}>Home</button>
       {session ? (
         <>
-          <button onClick={handleUserPage}>Profile</button>
+          <button onClick={handleUserPage}>{session.username}</button>
           <button onClick={handleLogout}>Logout</button>
         </>
       ) : (
-        <button onClick={handleLogin}>Login</button>
+        <>
+          <button onClick={handleLogin}>Login</button>
+        </>
       )}
     </div>
   );
