@@ -2,21 +2,25 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../hooks/SessionContext.js';
 
-
 const NavBar = () => {
   const navigate = useNavigate();
-  const { session } = useSession();
+  const { session, logout } = useSession();
 
   const handleHome = () => {
     navigate('/');
   };
 
   const handleUserPage = () => {
-    navigate(`/user/${session.username}`);
+    navigate(`/profile`);
   };
 
   const handleLogin = () => {
     navigate('/login');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
   };
 
   return (
@@ -31,7 +35,10 @@ const NavBar = () => {
       </div>
       <button onClick={handleHome}>Home</button>
       {session ? (
-        <button onClick={handleUserPage}>Profile</button>
+        <>
+          <button onClick={handleUserPage}>Profile</button>
+          <button onClick={handleLogout}>Logout</button>
+        </>
       ) : (
         <button onClick={handleLogin}>Login</button>
       )}

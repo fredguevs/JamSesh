@@ -80,6 +80,18 @@ app.get('/api/v1/session', (req, res) => {
   }
 });
 
+app.post('/api/v1/logout', (req, res) => {
+  console.log('logout api called')
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Error destroying session:', err);
+      return res.status(500).json({ message: 'Failed to logout' });
+    }
+    res.clearCookie('connect.sid'); // Clear the session cookie
+    return res.status(200).json({ message: 'Logged out successfully' });
+  });
+});
+
 const initializeDatabase = async () => {
   try {
     await createSessionTable();

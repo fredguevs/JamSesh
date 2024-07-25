@@ -111,5 +111,4 @@ const loginUser = async (req, res) => {
 };
 
 
-
 export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount, loginUser};

@@ -23,8 +23,28 @@ export const SessionProvider = ({ children }) => {
     fetchSession();
   }, []);
 
+  const login = async (username, password) => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/v1/users/login', { username, password }, { withCredentials: true });
+      if (response.status === 200) {
+        setSession(response.data.user);
+      }
+    } catch (err) {
+      console.error('Error logging in:', err);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/v1/logout', {}, { withCredentials: true });
+      setSession(null); // Clear session in state
+    } catch (err) {
+      console.error('Error logging out:', err);
+    }
+  };
+
   return (
-    <SessionContext.Provider value={{ session, setSession }}>
+    <SessionContext.Provider value={{ session, setSession, login, logout }}>
       {children}
     </SessionContext.Provider>
   );
