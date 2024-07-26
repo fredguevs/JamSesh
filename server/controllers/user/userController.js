@@ -33,20 +33,36 @@ const fetchUserByUsername = async (req, res) => {
 const modifyUser = async (req, res) => {
   const { username } = req.params;
   const { fullname, email, profilePictureUrl, password } = req.body;
-  if (req.user.username !== username) {
+
+  // Additional logging for debugging
+  console.log('Request Params:', req.params);
+  console.log('Request Session:', req.session);
+  console.log('Request Session User:', req.session.user);
+
+  // Check if the logged-in user is trying to modify their own profile
+  if (req.session.user?.username !== username) {
+    console.log('Username:', username);
+    console.log('Session User:', req.session.user);
     return res.status(403).json({ error: 'Forbidden' });
   }
+
+  // Validate input data
+  if (!fullname || !email) {
+    return res.status(400).json({ error: 'Full name and email are required' });
+  }
+
   try {
     const updatedUser = await updateUser(username, fullname, email, profilePictureUrl, password);
     res.status(200).json({ message: 'Successfully updated user', user: updatedUser });
   } catch (err) {
+    console.error('Error updating user:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 const removeUser = async (req, res) => {
   const { username } = req.params;
-  if (req.user.username !== username) {
+  if (req.session.user !== username) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
@@ -103,6 +119,7 @@ const loginUser = async (req, res) => {
         console.error('Failed to save session:', err);
         return res.status(500).json({ error: 'Failed to save session' });
       }
+      console.log('Session saved:', req.session.user);
       return res.status(200).json({ message: 'Login successful', user: req.session.user });
     });
   } else {

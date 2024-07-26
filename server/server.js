@@ -8,12 +8,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
+import sessionLogger from './middlewares/sessionLogger.js';
 import userRoutes from './routes/user/userRoutes.js';
 import postRoutes from './routes/post/postRoutes.js';
 import audioRoutes from './routes/audio/audioRoutes.js';
 import postLikesRoutes from './routes/post/postLikesRoutes.js';
 import audioLikesRoutes from './routes/audio/audioLikesRoutes.js';
 import uploadTestRoutes from './routes/uploadTestRoutes.js';
+import upload from './middlewares/uploadMiddleware.js';
+
+import { getUserByUsername, updateUser } from './models/user/userModel.js';
 
 import { createSessionTable } from './models/user/sessionModel.js';
 import { createUserTable } from './models/user/userModel.js';
@@ -35,12 +39,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
+app.use(
+  helmet.crossOriginResourcePolicy({ policy: 'same-site' })
+);
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-// Enable CORS for all routes including static files
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true,
+  credentials: true
 }));
 
 const pgSession = connectPgSimple(session);
@@ -61,17 +67,13 @@ app.use(session({
   }
 }));
 
-// Serve static files from the 'uploads' directory
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Cross-Origin-Resource-Policy', 'same-site');
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
+app.use(sessionLogger);
 
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/posts', postRoutes); // Ensure this is added correctly
 app.use('/api/v1/audios', audioRoutes);
 app.use('/api/v1/post-likes', postLikesRoutes);
 app.use('/api/v1/audio-likes', audioLikesRoutes);
@@ -96,6 +98,73 @@ app.post('/api/v1/logout', (req, res) => {
     return res.status(200).json({ message: 'Logged out successfully' });
   });
 });
+
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+  console.log('Login attempt with username:', username);
+
+  try {
+    const user = await getUserByUsername(username); // Replace this with your actual user validation logic
+    if (user && user.password === password) {
+      req.session.user = {
+        username: user.username,
+        fullname: user.fullname,
+        email: user.email,
+      };
+
+      req.session.save(err => {
+        if (err) {
+          console.error('Failed to save session:', err);
+          return res.status(500).json({ error: 'Failed to save session' });
+        }
+        return res.status(200).json({ message: 'Login successful', user: req.session.user });
+      });
+    } else {
+      console.log('Incorrect username or password');
+      res.status(403).json({ message: 'Incorrect username or password' });
+    }
+  } catch (err) {
+    console.error('Error logging in:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+app.post('/api/v1/login', loginUser);
+
+const modifyUser = async (req, res) => {
+  const { username } = req.params;
+  const { fullname, email } = req.body;
+  const profilePictureUrl = req.file ? req.file.path : null;
+
+  console.log('Request Params:', req.params);
+  console.log('Request Body:', req.body);
+  console.log('File:', req.file);
+  console.log('Request Session:', req.session);
+  console.log('Request Session User:', req.session.user);
+
+  // Check if the logged-in user is trying to modify their own profile
+  if (req.session.user?.username !== username) {
+    console.log('Username:', username);
+    console.log('Session User:', req.session.user);
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  // Validate input data
+  if (!fullname || !email) {
+    return res.status(400).json({ error: 'Full name and email are required' });
+  }
+
+  try {
+    const updatedUser = await updateUser(username, fullname, email, profilePictureUrl);
+    res.status(200).json({ message: 'Successfully updated user', user: updatedUser });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Add route for modifying user
+app.put('/api/v1/users/:username', upload.single('profilePicture'), modifyUser);
 
 const initializeDatabase = async () => {
   try {

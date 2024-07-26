@@ -79,13 +79,27 @@ const getUserByEmail = async (email) => {
 };
 
 const updateUser = async (username, fullname, email, profilePictureUrl, password) => {
-  const queryText = `
-    UPDATE users
-    SET fullname = $1, email = $2, profile_picture_url = $3, password = $4
-    WHERE username = $5
-    RETURNING *
-  `;
-  const values = [fullname, email, profilePictureUrl, password, username];
+  let queryText;
+  let values;
+
+  if (password) {
+    queryText = `
+      UPDATE users
+      SET fullname = $1, email = $2, profile_picture_url = $3, password = $4
+      WHERE username = $5
+      RETURNING *
+    `;
+    values = [fullname, email, profilePictureUrl, password, username];
+  } else {
+    queryText = `
+      UPDATE users
+      SET fullname = $1, email = $2, profile_picture_url = $3
+      WHERE username = $4
+      RETURNING *
+    `;
+    values = [fullname, email, profilePictureUrl, username];
+  }
+
   try {
     const res = await pool.query(queryText, values);
     return res.rows[0];
