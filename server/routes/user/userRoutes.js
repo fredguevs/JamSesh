@@ -9,7 +9,7 @@ router.get('/', fetchUsers); // Get all users
 router.get('/:username', fetchUserByUsername); // Get a user by username
 router.delete('/:username', removeUser); // Delete a user by username
 
-router.get('/search', searchUsers); // Search usernames
+router.get('/test/search', searchUsers); // Search usernames
 router.post('/create-account', profileUpload.single('profilePicture'), createAccount); // Create a new account
 
 
