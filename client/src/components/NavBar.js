@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../hooks/SessionContext.js';
 
 const NavBar = () => {
   const navigate = useNavigate();
   const { session, logout } = useSession();
+  const [showNav, setShowNav]  = useState(false);
+
+  const handleToggleMenu = () => {
+    setShowNav(!showNav);
+  }
+
+  const handleSearch = () => {
+    navigate('/search');
+  }
 
   const handleHome = () => {
     navigate('/');
@@ -24,27 +33,27 @@ const NavBar = () => {
   };
 
   return (
-    <div className="Navigation">
-      <div className="Search">
-        <label>
-          <input 
-            type="text" 
-            placeholder="Search"
-          />
-        </label>
+    <>
+      <button onClick={handleToggleMenu}>
+        {!showNav ? 'Menu': 'Close'}
+      </button>
+      {showNav && (
+        <div className="Navigation">
+        <button onClick={handleSearch}>Search</button>
+        <button onClick={handleHome}>Home</button>
+        {session ? (
+          <>
+            <button onClick={handleUserPage}>Profile</button>
+            <button onClick={handleLogout}>Logout</button>
+          </>
+        ) : (
+          <>
+            <button onClick={handleLogin}>Login</button>
+          </>
+        )}
       </div>
-      <button onClick={handleHome}>Home</button>
-      {session ? (
-        <>
-          <button onClick={handleUserPage}>{session.username}</button>
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      ) : (
-        <>
-          <button onClick={handleLogin}>Login</button>
-        </>
       )}
-    </div>
+    </>
   );
 };
 

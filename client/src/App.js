@@ -6,6 +6,7 @@ import LoginForm from './components/Login.js';
 import UserProfile from './pages/User.js';
 import CreateAccount from './pages/CreateAccount.js';
 import EditProfile from './pages/EditProfile.js';
+import SearchPage from './pages/Search.js';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/user/:username" element={<UserProfile />} />
           <Route path="/edit-profile/:username" element={<EditProfile />} />
           <Route path="/create-account" element={<CreateAccount />} />
+          <Route path='/search' element={<SearchPage/>} />
           {/* Add more routes as needed */}
         </Routes>
       </SessionProvider>
