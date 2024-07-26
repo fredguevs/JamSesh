@@ -5,20 +5,22 @@ import AppHeader from './components/Header.js';
 import LoginForm from './components/Login.js';
 import UserProfile from './pages/User.js';
 import CreateAccount from './pages/CreateAccount.js';
+import EditProfile from './pages/EditProfile.js';
 
 const App = () => {
   return (
-    <SessionProvider>
-      <Router>
+    <Router>
+      <SessionProvider>
         <AppHeader />
         <Routes>
           <Route path="/login" element={<LoginForm />} />
           <Route path="/user/:username" element={<UserProfile />} />
+          <Route path="/edit-profile/:username" element={<EditProfile />} />
           <Route path="/create-account" element={<CreateAccount />} />
           {/* Add more routes as needed */}
         </Routes>
-      </Router>
-    </SessionProvider>
+      </SessionProvider>
+    </Router>
   );
 };
 

@@ -4,7 +4,8 @@ import { useSession } from '../hooks/SessionContext';
 import axios from 'axios';
 
 export default function UserPage() {
-  const [follow, setFollow] = useState(false);
+  // Implement this later
+  // const [follow, setFollow] = useState(false);
   const [showPosts, setShowPosts] = useState(true);
   const [showAudios, setShowAudios] = useState(false);
   const [user, setUser] = useState({});
@@ -24,9 +25,7 @@ export default function UserPage() {
       .catch(error => console.log(error));
   }, [username]);
 
-  function handleFollow() {
-    setFollow(prevFollow => !prevFollow);
-  }
+
 
   function handleDisplayPosts() {
     setShowPosts(true);
@@ -91,6 +90,7 @@ export default function UserPage() {
   }
 
   function handleEditProfile() {
+    console.log('edit profile pressed for: ', username)
     navigate(`/edit-profile/${username}`);
   }
 
@@ -148,11 +148,6 @@ export default function UserPage() {
             <button onClick={handleEditProfile}>Edit Profile</button>
           </div>
         )}
-        <div className='follow-button'>
-          <button onClick={handleFollow}>
-            {follow ? 'Unfollow' : 'Follow'}
-          </button>
-        </div>
       </div>
 
       <div>

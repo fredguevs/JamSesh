@@ -1,22 +1,35 @@
-// EditProfile.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSession } from '../hooks/SessionContext.js';
 
 const EditProfile = () => {
-  const { userId } = useParams();
+  const { username } = useParams();
   const [user, setUser] = useState({
     username: '',
     fullname: '',
-    bio: '',
-    image: ''
+    email: '',
+    profilePictureUrl: ''
   });
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [error, setError] = useState('');
+  const { session } = useSession();
+  const navigate = useNavigate();
 
+  // Fetch user data on component mount
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/v1/users/${userId}`)
-      .then(response => setUser(response.data))
+    axios.get(`http://localhost:5000/api/v1/users/${username}`, { withCredentials: true })
+      .then(response => {
+        const fetchedUser = response.data;
+        setUser({
+          username: fetchedUser.username || '',
+          fullname: fetchedUser.fullname || '',
+          email: fetchedUser.email || '',
+          profilePictureUrl: fetchedUser.profilePictureUrl || ''
+        });
+      })
       .catch(error => console.log(error));
-  }, [userId]);
+  }, [username]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,29 +39,40 @@ const EditProfile = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    setProfilePicture(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.put(`http://localhost:5000/api/v1/users/${userId}`, user)
-      .then(response => {
-        console.log('Profile updated successfully', response.data);
-      })
-      .catch(error => console.log('Error updating profile', error));
+    const formData = new FormData();
+    formData.append('fullname', user.fullname);
+    formData.append('email', user.email);
+
+    if (profilePicture) {
+      formData.append('profilePicture', profilePicture);
+    }
+
+    try {
+      const response = await axios.put(`http://localhost:5000/api/v1/users/${username}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true // Ensure cookies are sent with the request
+      });
+      console.log('Profile updated successfully', response.data);
+      navigate(`/user/${username}`);
+    } catch (error) {
+      setError('Error updating profile');
+      console.log('Error updating profile', error);
+    }
   };
 
   return (
     <div>
       <h1>Edit Profile</h1>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
-        <label>
-          Username:
-          <input
-            type="text"
-            name="username"
-            value={user.username}
-            onChange={handleChange}
-          />
-        </label>
-        <br />
         <label>
           Fullname:
           <input
@@ -60,21 +84,21 @@ const EditProfile = () => {
         </label>
         <br />
         <label>
-          Bio:
-          <textarea
-            name="bio"
-            value={user.bio}
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={user.email}
             onChange={handleChange}
           />
         </label>
         <br />
         <label>
-          Image URL:
+          Profile Picture:
           <input
-            type="text"
-            name="image"
-            value={user.image}
-            onChange={handleChange}
+            type="file"
+            name="profilePicture"
+            onChange={handleFileChange}
           />
         </label>
         <br />

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const SessionContext = createContext();
@@ -7,6 +8,7 @@ export const useSession = () => useContext(SessionContext);
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -25,9 +27,10 @@ export const SessionProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/v1/users/login', { username, password }, { withCredentials: true });
+      const response = await axios.post('http://localhost:5000/api/v1/login', { username, password }, { withCredentials: true });
       if (response.status === 200) {
         setSession(response.data.user);
+        navigate(`/user/${username}`);
       }
     } catch (err) {
       console.error('Error logging in:', err);
