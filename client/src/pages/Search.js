@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 
+//TODO:"" make this more responsive
+
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([])
@@ -12,7 +14,7 @@ export default function SearchPage() {
    const debouncedFetchUsers = useMemo(
     () => debounce((searchQuery) => {
       fetchUsers(searchQuery);
-    }, 500), // Adjust the debounce delay as needed
+    }, 250), // Adjust the debounce delay as needed
     []
   );
 

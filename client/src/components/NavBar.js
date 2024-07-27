@@ -39,8 +39,8 @@ const NavBar = () => {
       </button>
       {showNav && (
         <div className="Navigation">
+        <button onClick={handleHome}>Feed</button>
         <button onClick={handleSearch}>Search</button>
-        <button onClick={handleHome}>Home</button>
         {session ? (
           <>
             <button onClick={handleUserPage}>Profile</button>
