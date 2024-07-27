@@ -36,6 +36,7 @@ export const fetchPostById = async (req, res) => {
   const { postid } = req.params;
   try {
     const post = await getPostsById(postid);
+    console.log('Getting post: ', postid)
     res.status(200).json(post);
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });
