@@ -142,7 +142,7 @@ export default function UserPage() {
   }
 
   function handlePostClick(postId) {
-    navigate(`/post/${postId}`);
+    navigate(`/post/${username}/${postId}`);
   }
 
   return (
@@ -240,9 +240,6 @@ export default function UserPage() {
                         src={`http://localhost:5000/${post.video_url}`}
                         style={{ pointerEvents: 'none' }} // Disable video controls
                       />
-                      <div className='video-overlay'>
-                        <p>Click to view</p>
-                      </div>
                     </div>
                    )}
                  </div>
