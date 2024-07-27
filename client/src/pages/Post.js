@@ -15,6 +15,9 @@ export default function PostPage() {
   const { username, postid } = useParams();
   const { session } = useSession();
   const [post, setPost] = useState(null); // Use null to better handle initial state
+  const [showEdit, setShowEdit] = useState(false);
+  const [showCaption, setShowCaption] = useState(false); 
+  const [caption, setCaption] = useState('');
 
   function handleExit() {
     navigate(`/user/${username}`);
@@ -35,10 +38,80 @@ export default function PostPage() {
     }
   }, [postid]);
 
+  function handleEdit() {
+    setShowEdit(!showEdit);
+  }
+  
+  const handleShowCaption = () => {
+    setShowCaption(!showCaption);
+  }
+
+  async function handleUpdateCaption(e) {
+    e.preventDefault();
+    if (caption) {
+      try {
+        const response = await axios.put(`http://localhost:5000/api/v1/posts/${postid}`, { caption }, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true,
+        });
+        console.log('Post updated:', response.data);
+        window.location.reload();
+      } catch (error) {
+        console.error('Error updating post:', error);
+      }
+    }
+  }
+
+  async function handleDelete(e) {
+    e.preventDefault();
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/v1/posts/${postid}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true,
+      });
+      console.log('Post delete:', response.data);
+      navigate(`/user/${username}`);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  }
+
   return (
     <>
       <div className="exit-button">
         <button onClick={handleExit}>Back</button>
+      </div>
+      <div className="edit-button">
+        {session && session.username === username && (
+          <>
+            <button onClick={handleEdit}>Edit Post</button>
+            {showEdit && (
+              <div className="post-buttons">
+                <button onClick={handleShowCaption}>Edit Caption</button>
+                <>
+                {showCaption && (
+                  <div>
+                    <label htmlFor="caption">Caption:</label>
+                    <input
+                      type="text"
+                      id="caption"
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      placeholder="Enter caption"
+                    />
+                    <button onClick={handleUpdateCaption}>Submit</button>
+                  </div>
+                )}
+                </>
+                <button onClick={handleDelete}>Delete Post</button>
+              </div>
+            )}
+          </>
+        )}
       </div>
       <div className="post">
         {post ? (
@@ -57,6 +130,7 @@ export default function PostPage() {
               </div>
             )}
             <div>
+              <p>{post.caption}</p>
               <p>
                 {new Date(post.created).toLocaleDateString('en-US', {
                   month: 'long',

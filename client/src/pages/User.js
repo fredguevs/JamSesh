@@ -9,6 +9,7 @@ export default function UserPage() {
   const [showCreateOptions, setShowCreateOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
+  const [caption, setCaption] = useState(''); // Add state for caption
   const [user, setUser] = useState({});
   const { username } = useParams();
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function UserPage() {
         formData.append('video', file);
       }
       formData.append('owner', session.username); // Include the session user in the form data
+      formData.append('caption', caption); // Include caption in the form data
 
       try {
         const response = await axios.post('http://localhost:5000/api/v1/posts', formData, {
@@ -189,6 +191,16 @@ export default function UserPage() {
           {selectedFile.type.startsWith('audio/') && (
             <audio controls src={previewURL} className="preview-audio" />
           )}
+          <div>
+            <label htmlFor="caption">Caption:</label>
+            <input
+              type="text"
+              id="caption"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Enter caption"
+            />
+          </div>
           {selectedFile.type.startsWith('image/') || selectedFile.type.startsWith('video/') ? (
             <button onClick={handleUploadPost}>Submit</button>
           ) : (
