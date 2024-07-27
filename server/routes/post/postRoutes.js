@@ -1,6 +1,6 @@
 // routes/post/postRoutes.js
 import express from 'express';
-import { createPost, fetchPosts, fetchPostById, fetchPostsByUser, removePost } from '../../controllers/post/postController.js';
+import { createPost, fetchPosts, fetchPostById, fetchPostsByUser, removePost, modifyPost } from '../../controllers/post/postController.js';
 import upload from '../../middlewares/postUploadMiddleware.js';
 
 const router = express.Router();
@@ -13,5 +13,6 @@ router.get('/', fetchPosts);
 router.get('/:postid', fetchPostById);
 router.get('/user/:username', fetchPostsByUser);
 router.delete('/:postid', removePost);
+router.put('/:postid', modifyPost);
 
 export default router;

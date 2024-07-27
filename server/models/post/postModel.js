@@ -1,4 +1,10 @@
 // models/postModel.js
+import { fileURLToPath } from 'url';
+
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import pool from '../../config/db.js';
 import fs from 'fs';
 import path from 'path';
@@ -9,6 +15,7 @@ export const createPostTable = async () => {
       postid SERIAL PRIMARY KEY,
       created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
       owner VARCHAR(20) NOT NULL,
+      caption VARCHAR(100) NOT NULL,
       image_url TEXT,
       video_url TEXT,
       FOREIGN KEY (owner) REFERENCES users(username) ON DELETE CASCADE
@@ -22,13 +29,13 @@ export const createPostTable = async () => {
   }
 };
 
-export const insertPost = async (owner, imageUrl, videoUrl) => {
+export const insertPost = async (owner, imageUrl, videoUrl, caption) => {
   const queryText = `
-    INSERT INTO posts (owner, image_url, video_url)
-    VALUES ($1, $2, $3)
+    INSERT INTO posts (owner, image_url, video_url, caption)
+    VALUES ($1, $2, $3, $4)
     RETURNING *
   `;
-  const values = [owner, imageUrl, videoUrl];
+  const values = [owner, imageUrl, videoUrl, caption];
   try {
     const res = await pool.query(queryText, values);
     return res.rows[0];
@@ -102,6 +109,24 @@ export const deletePost = async (postid) => {
     }
   } catch (err) {
     console.error('Error deleting post', err);
+    throw err;
+  }
+};
+
+export const updatePost = async (postid, caption) => {
+  const queryText = `
+    UPDATE posts
+    SET caption = $1
+    WHERE postid = $2
+    RETURNING *
+  `;
+  const values = [caption, postid];
+
+  try {
+    const res = await pool.query(queryText, values);
+    return res.rows[0];
+  } catch (err) {
+    console.error('Error updating post', err);
     throw err;
   }
 };
