@@ -1,4 +1,4 @@
-import { insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames } from '../../models/user/userModel.js';
+import { insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames, updatePassword } from '../../models/user/userModel.js';
 
 const addUser = async (req, res) => {
   const { username, fullname, email, profilePictureUrl, password } = req.body;
@@ -128,5 +128,31 @@ const loginUser = async (req, res) => {
   }
 };
 
+const changeUserPassword = async (req, res) => {
+  const { username } = req.params;
+  const { currentPassword, newPassword } = req.body;
 
-export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount, loginUser};
+  try {
+    const user = await getUserByUsername(username) ;
+
+    if (req.session.user?.username !== user.username) {
+      console.log('User', user.username);
+      console.log('Session', req.session.user);
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (!user || (currentPassword !== user.password)) {
+      return res.status(401).json({ error: 'Incorrect current password' });
+    }
+
+    await updatePassword(username, newPassword);
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ error: 'Error updating password' });
+  }
+};
+
+
+export { addUser, fetchUsers, fetchUserByUsername, modifyUser, removeUser, searchUsers, createAccount, loginUser, changeUserPassword};

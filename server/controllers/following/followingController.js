@@ -45,7 +45,7 @@ export const unfollowUser = async (req, res) => {
     if (success) {
       res.status(200).json({ message: 'Successfully unfollowed' });
     } else {
-      res.status(404).json({ message: 'Following relationship not found' });
+      res.status(404).json({ message: `Following relationship not found for ${follower}, ${followee}`});
     }
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

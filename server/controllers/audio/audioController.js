@@ -1,14 +1,19 @@
-import { insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio } from '../../models/audio/audioModel.js';
+import { insertAudio, getAllAudios, getAudioById, getAudiosByUser, deleteAudio, updateAudio } from '../../models/audio/audioModel.js';
 
 export const createAudio = async (req, res) => {
-  const { title, owner } = req.body;
-  if (req.user.username !== owner) {
+  const { title, owner, caption } = req.body;
+  if (req.session.user?.username !== owner) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   const url = req.file ? req.file.path : null;
 
   try {
-    const newAudio = await insertAudio(title, url, owner);
+    if (req.session.user?.username !== owner) {
+      console.log('Username:', owner);
+      console.log('Session User:', req.session.user);
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const newAudio = await insertAudio(title, url, owner, caption);
     res.status(201).json({ message: 'Audio created successfully', audio: newAudio });
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });
@@ -48,7 +53,7 @@ export const removeAudio = async (req, res) => {
   const { audioid } = req.params;
   try {
     const audio = await getAudioById(audioid);
-    if (req.user.username !== audio.owner) {
+    if (req.session.user?.username !== audio.owner) {
       return res.status(403).json({ error: 'Forbidden' });
     }
     const deletedAudio = await deleteAudio(audioid);
@@ -57,3 +62,21 @@ export const removeAudio = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const modifyAudio = async (req, res) => {
+  const { audioid } = req.params;
+  const { caption } = req.body;
+  try {
+    const audio = await getAudioById(audioid);
+    if (req.session.user?.username !== audio.owner) {
+      console.log('Username:', audio.owner);
+      console.log('Session User:', req.session.user);
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const updatedAudio = await updateAudio(audioid, caption);
+    res.status(200).json({message: 'Successfuly updated audio', audio: updatedAudio});
+  }
+  catch (err) {
+    res.status(500).json({ error: 'Internal Server Error'});
+  };
+}

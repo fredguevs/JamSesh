@@ -1,6 +1,13 @@
+// models/postModel.js
+import { fileURLToPath } from 'url';
 import pool from '../../config/db.js';
 
-// TODO: need to figure out how to upload audios
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import fs from 'fs';
+import path from 'path';
 
 export const createAudioTable = async () => {
   const queryText = `
@@ -9,7 +16,8 @@ export const createAudioTable = async () => {
       audioid SERIAL PRIMARY KEY,
       title VARCHAR(100) NOT NULL,
       url TEXT NOT NULL,
-      owner VARCHAR(20) NOT NULL,
+      owner VARCHAR(40) NOT NULL,
+      caption VARCHAR(100) NOT NULL,
       FOREIGN KEY (owner) REFERENCES users(username) ON DELETE CASCADE
     )
   `;
@@ -22,14 +30,15 @@ export const createAudioTable = async () => {
   }
 };
 
-export const insertAudio = async (title, url, owner) => {
+export const insertAudio = async (title, url, owner, caption) => {
   const queryText = `
-    INSERT INTO audios (title, url, owner)
-    VALUES ($1, $2, $3)
+    INSERT INTO audios (title, url, owner, caption)
+    VALUES ($1, $2, $3, $4)
     RETURNING *
   `;
-  const values = [title, url, owner];
+  const values = [title, url, owner, caption];
   try {
+    console.log('Values', values);
     const res = await pool.query(queryText, values);
     return res.rows[0];
   } catch (err) {
@@ -95,4 +104,23 @@ export const deleteAudio = async (audioid) => {
     throw err;
   }
 };
+
+export const updateAudio = async (audioid, caption) => {
+  const queryText = `
+    UPDATE audios
+    SET caption = $1
+    WHERE audioid = $2
+    RETURNING *
+  `;
+  const values = [caption, audioid];
+
+  try {
+    const res = await pool.query(queryText, values);
+    return res.rows[0];
+
+  } catch (err) {
+    console.error('Error updating audio', err);
+    throw err;
+  }
+}
 

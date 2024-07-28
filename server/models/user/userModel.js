@@ -147,4 +147,16 @@ const searchUsernames = async (query) => {
   }
 };
 
-export { createUserTable, insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames };
+const updatePassword = async (username, newPassword) => {
+  const queryText = 'UPDATE users SET password = $1 WHERE username = $2';
+  const values = [newPassword, username];
+  try {
+    await pool.query(queryText, values);
+    console.log(`Password updated for username: ${username}`);
+  } catch (err) {
+    console.error('Error updating password', err);
+    throw err;
+  }
+};
+
+export { createUserTable, insertUser, getAllUsers, getUserByUsername, getUserByEmail, updateUser, deleteUser, searchUsernames, updatePassword };
