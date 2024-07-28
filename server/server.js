@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 import sessionLogger from './middlewares/sessionLogger.js';
+import followingRoutes from './routes/following/followingRoutes.js'
 import userRoutes from './routes/user/userRoutes.js';
 import postRoutes from './routes/post/postRoutes.js';
 import audioRoutes from './routes/audio/audioRoutes.js';
@@ -21,6 +22,7 @@ import { getUserByUsername, updateUser } from './models/user/userModel.js';
 
 import { createSessionTable } from './models/user/sessionModel.js';
 import { createUserTable } from './models/user/userModel.js';
+import { createFollowingTable } from './models/following/followingModel.js';
 import { createPostTable } from './models/post/postModel.js';
 import { createAudioTable } from './models/audio/audioModel.js';
 import { createPostLikesTable } from './models/post/postLikesModel.js';
@@ -77,6 +79,7 @@ app.use('/api/v1/posts', postRoutes); // Ensure this is added correctly
 app.use('/api/v1/audios', audioRoutes);
 app.use('/api/v1/post-likes', postLikesRoutes);
 app.use('/api/v1/audio-likes', audioLikesRoutes);
+app.use('/api/v1/following', followingRoutes);
 app.use('/api/v1', uploadTestRoutes);
 
 app.get('/api/v1/session', (req, res) => {
@@ -170,6 +173,7 @@ const initializeDatabase = async () => {
   try {
     await createSessionTable();
     await createUserTable();
+    await createFollowingTable();
     await createPostTable();
     await createAudioTable();
     await createPostLikesTable();

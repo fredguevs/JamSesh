@@ -2,7 +2,6 @@
 import { insertPost, getAllPosts, getPostsByUser, getPostsById, deletePost, updatePost } from '../../models/post/postModel.js';
 
 export const createPost = async (req, res) => {
-  // TODO: Implement security here
   const { owner, caption } = req.body;
   const image = req.files['image'] ? req.files['image'][0].path : null;
   const video = req.files['video'] ? req.files['video'][0].path : null;
@@ -54,7 +53,6 @@ export const removePost = async (req, res) => {
   const { postid } = req.params;
   try {
     const post = await getPostsById(postid);
-    console.log('Post to delete retrieved');
     if (req.session.user?.username !== post.owner) {
       console.log('Username:', post.owner);
       console.log('Session User:', req.session.user);
