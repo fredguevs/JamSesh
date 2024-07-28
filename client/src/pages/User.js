@@ -9,6 +9,7 @@ export default function UserPage() {
   const [showCreateOptions, setShowCreateOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
+  const [audioTitle, setAudioTitle] = useState(null);
   const [caption, setCaption] = useState('');
   const [user, setUser] = useState({});
   const [following, setFollowing] = useState(false);
@@ -100,23 +101,28 @@ export default function UserPage() {
     e.preventDefault();
     if (!selectedFile) return;
 
-    const formData = new FormData();
-    formData.append('audio', selectedFile);
-    formData.append('owner', session.username);
+    const file = audioFileInputRef.current.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('audio', selectedFile);
+      formData.append('title', audioTitle);
+      formData.append('owner', session.username);
+      formData.append('caption', caption);
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/v1/audios', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        withCredentials: true,
-      });
-      console.log('Audio uploaded:', response.data);
-      setSelectedFile(null);
-      setPreviewURL(null);
-      fetchAudios();
-    } catch (error) {
-      console.error('Error uploading audio:', error);
+      try {
+        const response = await axios.post('http://localhost:5000/api/v1/audios', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true,
+        });
+        console.log('Audio uploaded:', response.data);
+        fetchAudios();
+        window.location.reload();
+      }
+      catch (error) {
+        console.error('Error uploading audio:', error);
+      }
     }
   }
 
@@ -166,6 +172,10 @@ export default function UserPage() {
 
   function handlePostClick(postId) {
     navigate(`/post/${username}/${postId}`);
+  }
+
+  function handleAudioClick(audioId) {
+    navigate(`/audio/${username}/${audioId}`);
   }
 
   async function handleFollow() {
@@ -239,7 +249,19 @@ export default function UserPage() {
             <video controls src={previewURL} className="preview-video" />
           )}
           {selectedFile.type.startsWith('audio/') && (
-            <audio controls src={previewURL} className="preview-audio" />
+            <>
+              <audio controls src={previewURL} className="preview-audio" />
+              <div className='audio-title'>
+                <label htmlFor="title">Title:</label>
+                <input
+                  type="text"
+                  id="title"
+                  value={audioTitle}
+                  onChange={(e) => setAudioTitle(e.target.value)}
+                  placeholder="Enter title"
+                />
+              </div>
+            </>
           )}
           <div>
             <label htmlFor="caption">Caption:</label>
@@ -327,8 +349,11 @@ export default function UserPage() {
             <div className='UserAudios'>
               <div className='Audios'>
                 {user.audios.map(audio => (
-                  <div key={audio.id} className='Audio'>
-                    <p>{audio.url}</p>
+                  <div key={audio.id} className='Audio' onClick={() => handleAudioClick(audio.audioid)}>
+                    <div className='audio-display-title'>
+                      <p>{audio.title}</p>
+                    </div>
+                    <audio controls src={`http://localhost:5000/${audio.url}`} />
                   </div>
                 ))}
               </div>

@@ -8,6 +8,7 @@ import CreateAccount from './pages/CreateAccount.js';
 import EditProfile from './pages/EditProfile.js';
 import SearchPage from './pages/Search.js';
 import PostPage from './pages/Post.js';
+import AudioPage from './pages/Audio.js';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path='/search' element={<SearchPage/>} />
           <Route path="/post/:username/:postid" element={<PostPage />} />
+          <Route path="/audio/:username/:audioid" element={<AudioPage />} />
           {/* Add more routes as needed */}
         </Routes>
       </SessionProvider>

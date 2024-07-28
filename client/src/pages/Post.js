@@ -20,11 +20,12 @@ export default function PostPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       })
-        .then(response => {
-          setPost(response.data);
-          fetchPostOwner(response.data.owner);
-        })
-        .catch(error => console.log(error));
+      .then(response => {
+        setPost(response.data);
+        setCaption(response.data.caption); // Set the original caption
+        fetchPostOwner(response.data.owner);
+      })
+      .catch(error => console.log(error));
     }
   }, [postid]);
 
