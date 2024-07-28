@@ -136,8 +136,12 @@ app.post('/api/v1/login', loginUser);
 
 const modifyUser = async (req, res) => {
   const { username } = req.params;
-  const { fullname, email } = req.body;
-  const profilePictureUrl = req.file ? req.file.path : null;
+  const { fullname, email, bio } = req.body;
+  let profilePictureUrl = req.body.profilePictureUrl;
+
+  if (req.file) {
+    profilePictureUrl = req.file.path; // If a new file is uploaded, use its path
+  }
 
   console.log('Request Params:', req.params);
   console.log('Request Body:', req.body);
@@ -158,7 +162,7 @@ const modifyUser = async (req, res) => {
   }
 
   try {
-    const updatedUser = await updateUser(username, fullname, email, profilePictureUrl);
+    const updatedUser = await updateUser(username, fullname, email, bio, profilePictureUrl);
     res.status(200).json({ message: 'Successfully updated user', user: updatedUser });
   } catch (err) {
     console.error('Error updating user:', err);

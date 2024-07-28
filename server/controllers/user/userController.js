@@ -32,17 +32,11 @@ const fetchUserByUsername = async (req, res) => {
 
 const modifyUser = async (req, res) => {
   const { username } = req.params;
-  const { fullname, email, profilePictureUrl, password } = req.body;
-
-  // Additional logging for debugging
-  console.log('Request Params:', req.params);
-  console.log('Request Session:', req.session);
-  console.log('Request Session User:', req.session.user);
+  const { fullname, email, bio, password } = req.body;
+  let profilePictureUrl = req.body.profilePictureUrl; // Default to existing URL if not updated
 
   // Check if the logged-in user is trying to modify their own profile
   if (req.session.user?.username !== username) {
-    console.log('Username:', username);
-    console.log('Session User:', req.session.user);
     return res.status(403).json({ error: 'Forbidden' });
   }
 
@@ -51,8 +45,13 @@ const modifyUser = async (req, res) => {
     return res.status(400).json({ error: 'Full name and email are required' });
   }
 
+  // Handle profile picture update
+  if (req.file) {
+    profilePictureUrl = req.file.path; // Assuming req.file.path contains the file path
+  }
+
   try {
-    const updatedUser = await updateUser(username, fullname, email, profilePictureUrl, password);
+    const updatedUser = await updateUser(username, fullname, email, bio, profilePictureUrl, password);
     res.status(200).json({ message: 'Successfully updated user', user: updatedUser });
   } catch (err) {
     console.error('Error updating user:', err);
@@ -62,12 +61,20 @@ const modifyUser = async (req, res) => {
 
 const removeUser = async (req, res) => {
   const { username } = req.params;
-  if (req.session.user !== username) {
+  if (req.session.user?.username !== username) {
+    console.log('User to be delete:', username);
+    console.log('User trying to delete:', req.session);
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
-    const deletedUser = await deleteUser(username);
-    res.status(200).json({ message: 'Successfully deleted user', user: deletedUser });
+    await deleteUser(username);
+    req.session.destroy(err => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to log out after account deletion' });
+      }
+      res.clearCookie('connect.sid');
+      return res.status(200).json({ message: 'Account deleted and logged out successfully' });
+    });
   } catch (err) {
     res.status(500).json({ error: 'Internal Server Error' });
   }

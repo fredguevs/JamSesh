@@ -1,5 +1,13 @@
 import pool from '../../config/db.js';
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import fs from 'fs';
+import path from 'path';
+
 const createUserTable = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
@@ -7,6 +15,7 @@ const createUserTable = async () => {
       username VARCHAR(40) PRIMARY KEY,
       fullname VARCHAR(100) NOT NULL,
       email VARCHAR(100) UNIQUE NOT NULL,
+      bio VARCHAR(200),
       profile_picture_url TEXT,
       password VARCHAR(256) NOT NULL
     )
@@ -78,27 +87,16 @@ const getUserByEmail = async (email) => {
   }
 };
 
-const updateUser = async (username, fullname, email, profilePictureUrl, password) => {
-  let queryText;
+const updateUser = async (username, fullname, email, bio, profilePictureUrl) => {
   let values;
 
-  if (password) {
-    queryText = `
-      UPDATE users
-      SET fullname = $1, email = $2, profile_picture_url = $3, password = $4
-      WHERE username = $5
-      RETURNING *
-    `;
-    values = [fullname, email, profilePictureUrl, password, username];
-  } else {
-    queryText = `
-      UPDATE users
-      SET fullname = $1, email = $2, profile_picture_url = $3
-      WHERE username = $4
-      RETURNING *
-    `;
-    values = [fullname, email, profilePictureUrl, username];
-  }
+  const queryText = `
+    UPDATE users
+    SET fullname = $1, email = $2, bio = $3, profile_picture_url = COALESCE($4, profile_picture_url)
+    WHERE username = $5
+    RETURNING *
+  `;
+  values = [fullname, email, bio, profilePictureUrl, username];
 
   try {
     const res = await pool.query(queryText, values);
