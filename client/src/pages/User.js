@@ -118,7 +118,7 @@ export default function UserPage() {
         });
         console.log('Audio uploaded:', response.data);
         fetchAudios();
-        window.location.reload();
+        
       }
       catch (error) {
         console.error('Error uploading audio:', error);
@@ -295,7 +295,7 @@ export default function UserPage() {
           )}
           <h1>{user.username}</h1>
           <h2>{user.fullname}</h2>
-          <p>{user.bio}</p>
+          <h4>{user.bio}</h4>
         </div>
         <div className='Following'>
           {session && session.username !== user.username &&  (

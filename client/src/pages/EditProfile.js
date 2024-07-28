@@ -9,13 +9,14 @@ const EditProfile = () => {
     username: '',
     fullname: '',
     email: '',
+    bio: '',
     profilePictureUrl: ''
   });
   const [profilePicture, setProfilePicture] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const { session } = useSession();
+  const { session, setSession } = useSession();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -33,6 +34,7 @@ const EditProfile = () => {
           username: fetchedUser.username || '',
           fullname: fetchedUser.fullname || '',
           email: fetchedUser.email || '',
+          bio: fetchedUser.bio || '',
           profilePictureUrl: fetchedUser.profile_picture_url || '' // Correct field name
         });
         if (fetchedUser.profile_picture_url) {
@@ -70,6 +72,7 @@ const EditProfile = () => {
     const formData = new FormData();
     formData.append('fullname', user.fullname);
     formData.append('email', user.email);
+    formData.append('bio', user.bio);
 
     if (profilePicture) {
       formData.append('profilePicture', profilePicture);
@@ -115,6 +118,24 @@ const EditProfile = () => {
     }
   };
 
+  async function handleDeleteAccount() {
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/v1/users/${username}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true // Ensure cookies are sent with the request
+      })
+      console.log('Successfully delete account', response.data);
+      setSession(null);
+      navigate('/');
+      window.location.reload();
+    }
+    catch (error) {
+      console.log('Error deleting account', error);
+    }
+  }
+
   return (
     <div>
       <h1>Edit Profile</h1>
@@ -137,6 +158,16 @@ const EditProfile = () => {
             name="email"
             value={user.email}
             onChange={handleChange}
+          />
+        </label>
+        <br />
+        <label>
+          Bio:
+          <textarea
+            name="bio"
+            value={user.bio}
+            onChange={handleChange}
+            placeholder="Enter your bio"
           />
         </label>
         <br />
@@ -197,6 +228,10 @@ const EditProfile = () => {
         <br />
         <button type="submit">Change Password</button>
       </form>
+
+      <h2>Delete Your Account:</h2>
+      <button onClick={handleDeleteAccount}>Delete Account</button>
+  
     </div>
   );
 };
