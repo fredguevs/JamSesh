@@ -3,57 +3,95 @@ import axios from "axios";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession } from '../hooks/SessionContext';
 
-/*
-  Want to:
-  - Display photo, post
-  - Time created
-  - Like button
-*/
-
 export default function PostPage() {
   const navigate = useNavigate();
   const { username, postid } = useParams();
   const { session } = useSession();
-  const [post, setPost] = useState(null); // Use null to better handle initial state
+  const [post, setPost] = useState(null);
+  const [postOwner, setPostOwner] = useState(null);
+  const [following, setFollowing] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [showCaption, setShowCaption] = useState(false); 
+  const [showCaption, setShowCaption] = useState(false);
   const [caption, setCaption] = useState('');
-
-  function handleExit() {
-    navigate(`/user/${username}`);
-  }
 
   useEffect(() => {
     if (postid) {
       axios.get(`http://localhost:5000/api/v1/posts/${postid}`, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       })
         .then(response => {
           setPost(response.data);
+          fetchPostOwner(response.data.owner);
         })
         .catch(error => console.log(error));
     }
   }, [postid]);
 
-  function handleEdit() {
+  const fetchPostOwner = async (ownerUsername) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/v1/users/${ownerUsername}`);
+      setPostOwner(response.data);
+      if (session.username !== ownerUsername) {
+        checkIfFollowing(ownerUsername);
+      }
+    } catch (error) {
+      console.error('Error fetching post owner:', error);
+    }
+  };
+
+  const checkIfFollowing = async (followee) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/v1/following', {
+        params: { follower: session.username, followee },
+        withCredentials: true,
+      });
+      setFollowing(response.data.isFollowing);
+    } catch (err) {
+      console.error('Error checking follow status', err);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!following) {
+      try {
+        await axios.post('http://localhost:5000/api/v1/following', {
+          follower: session.username,
+          followee: postOwner.username
+        }, {
+          withCredentials: true,
+        });
+        setFollowing(true);
+      } catch (err) {
+        console.error('Error adding follower', err);
+      }
+    } else {
+      try {
+        await axios.delete('http://localhost:5000/api/v1/following', {
+          data: { follower: session.username, followee: postOwner.username },
+          withCredentials: true,
+        });
+        setFollowing(false);
+      } catch (err) {
+        console.error('Error removing follower', err);
+      }
+    }
+  };
+
+  const handleEdit = () => {
     setShowEdit(!showEdit);
-  }
-  
+  };
+
   const handleShowCaption = () => {
     setShowCaption(!showCaption);
-  }
+  };
 
-  async function handleUpdateCaption(e) {
+  const handleUpdateCaption = async (e) => {
     e.preventDefault();
     if (caption) {
       try {
         const response = await axios.put(`http://localhost:5000/api/v1/posts/${postid}`, { caption }, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           withCredentials: true,
         });
         console.log('Post updated:', response.data);
@@ -62,23 +100,25 @@ export default function PostPage() {
         console.error('Error updating post:', error);
       }
     }
-  }
+  };
 
-  async function handleDelete(e) {
+  const handleDelete = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.delete(`http://localhost:5000/api/v1/posts/${postid}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       });
-      console.log('Post delete:', response.data);
+      console.log('Post deleted:', response.data);
       navigate(`/user/${username}`);
     } catch (error) {
       console.error('Error deleting post:', error);
     }
-  }
+  };
+
+  const handleExit = () => {
+    navigate(`/user/${username}`);
+  };
 
   return (
     <>
@@ -92,7 +132,6 @@ export default function PostPage() {
             {showEdit && (
               <div className="post-buttons">
                 <button onClick={handleShowCaption}>Edit Caption</button>
-                <>
                 {showCaption && (
                   <div>
                     <label htmlFor="caption">Caption:</label>
@@ -106,7 +145,6 @@ export default function PostPage() {
                     <button onClick={handleUpdateCaption}>Submit</button>
                   </div>
                 )}
-                </>
                 <button onClick={handleDelete}>Delete Post</button>
               </div>
             )}
@@ -129,6 +167,16 @@ export default function PostPage() {
                 </video>
               </div>
             )}
+            {postOwner && (
+              <div className="post-owner">
+                <h1>{postOwner.username}</h1>
+                {session && session.username !== postOwner.username && (
+                  <button onClick={handleFollow}>
+                    {following ? 'Following' : 'Follow'}
+                  </button>
+                )}
+              </div>
+            )}
             <div>
               <p>{post.caption}</p>
               <p>
@@ -144,9 +192,6 @@ export default function PostPage() {
                 })}
               </p>
             </div>
-            {/* <div>
-              <button>Like</button>
-            </div> */}
           </>
         ) : (
           <p>Loading...</p>

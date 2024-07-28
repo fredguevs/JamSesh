@@ -9,8 +9,9 @@ export default function UserPage() {
   const [showCreateOptions, setShowCreateOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
-  const [caption, setCaption] = useState(''); // Add state for caption
+  const [caption, setCaption] = useState('');
   const [user, setUser] = useState({});
+  const [following, setFollowing] = useState(false);
   const { username } = useParams();
   const navigate = useNavigate();
   const { session } = useSession();
@@ -19,24 +20,52 @@ export default function UserPage() {
   const audioFileInputRef = useRef(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/v1/users/${username}`)
-      .then(response => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/v1/users/${username}`);
         setUser(response.data);
-      })
-      .catch(error => console.log(error));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, [username]);
 
-  function handleDisplayPosts() {
+  useEffect(() => {
+    if (session && user.username) {
+      checkIfFollowing(session.username, user.username);
+    }
+    if (showPosts) {
+      fetchPosts();
+    } else {
+      fetchAudios();
+    }
+  }, [showPosts, showAudios, username, session, user.username]);
+
+  async function checkIfFollowing(follower, followee) {
+    try {
+      const response = await axios.get('http://localhost:5000/api/v1/following', {
+        params: { follower, followee },
+        withCredentials: true,
+      });
+      setFollowing(response.data.isFollowing);
+    } catch (err) {
+      console.error('Error checking follow status', err);
+    }
+  }
+
+  const handleDisplayPosts = () => {
     setShowPosts(true);
     setShowAudios(false);
     fetchPosts();
-  }
+  };
 
-  function handleDisplayAudios() {
+  const handleDisplayAudios = () => {
     setShowAudios(true);
     setShowPosts(false);
-    fetchPosts();
-  }
+    fetchAudios();
+  };
 
   async function handleUploadPost(e) {
     e.preventDefault();
@@ -48,8 +77,8 @@ export default function UserPage() {
       } else if (file.type.startsWith('video/')) {
         formData.append('video', file);
       }
-      formData.append('owner', session.username); // Include the session user in the form data
-      formData.append('caption', caption); // Include caption in the form data
+      formData.append('owner', session.username);
+      formData.append('caption', caption);
 
       try {
         const response = await axios.post('http://localhost:5000/api/v1/posts', formData, {
@@ -59,7 +88,7 @@ export default function UserPage() {
           withCredentials: true,
         });
         console.log('Post uploaded:', response.data);
-        fetchPosts(); // Fetch updated posts
+        fetchPosts();
         window.location.reload();
       } catch (error) {
         console.error('Error uploading post:', error);
@@ -85,7 +114,7 @@ export default function UserPage() {
       console.log('Audio uploaded:', response.data);
       setSelectedFile(null);
       setPreviewURL(null);
-      fetchAudios(); // Fetch updated audios
+      fetchAudios();
     } catch (error) {
       console.error('Error uploading audio:', error);
     }
@@ -117,14 +146,6 @@ export default function UserPage() {
     }
   };
 
-  useEffect(() => {
-    if (showPosts) {
-      fetchPosts();
-    } else {
-      fetchAudios();
-    }
-  }, [showPosts, showAudios, username]);
-
   function handleCreate() {
     setShowCreateOptions(!showCreateOptions);
   }
@@ -145,6 +166,35 @@ export default function UserPage() {
 
   function handlePostClick(postId) {
     navigate(`/post/${username}/${postId}`);
+  }
+
+  async function handleFollow() {
+    if (!following) {
+      try {
+        await axios.post('http://localhost:5000/api/v1/following', {
+          follower: session.username,
+          followee: username
+        }, {
+          withCredentials: true,
+        });
+        setFollowing(true);
+      } catch (err) {
+        console.error('Error adding follower', err);
+      }
+    } else {
+      try {
+        await axios.delete('http://localhost:5000/api/v1/following', {
+          data: {
+            follower: session.username,
+            followee: username
+          },
+          withCredentials: true,
+        });
+        setFollowing(false);
+      } catch (err) {
+        console.error('Error removing follower', err);
+      }
+    }
   }
 
   return (
@@ -224,6 +274,15 @@ export default function UserPage() {
           <h1>{user.username}</h1>
           <h2>{user.fullname}</h2>
           <p>{user.bio}</p>
+        </div>
+        <div className='Following'>
+          {session && session.username !== user.username &&  (
+            <div>
+              <button onClick={handleFollow}>
+                {following ? "Following" : "Follow"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
