@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession } from '../hooks/SessionContext';
+import Modal from '../components/Modal.js';
+import '../styles/PostPage.css';
+import backButtonImage from '../assets/backButton.png'; // Adjust the path as needed
 
 export default function PostPage() {
   const navigate = useNavigate();
@@ -13,8 +16,19 @@ export default function PostPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showCaption, setShowCaption] = useState(false);
   const [caption, setCaption] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    // Hide the navbar when the component mounts
+    const navbar = document.querySelector('.NavBar'); // Adjust the selector to match your navbar
+    if (navbar) {
+      console.log('Navbar found:', navbar);
+      navbar.classList.add('hidden-navbar');
+    } else {
+      console.log('Navbar not found');
+    }
+
+    // Fetch post data
     if (postid) {
       axios.get(`http://localhost:5000/api/v1/posts/${postid}`, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -27,6 +41,13 @@ export default function PostPage() {
       })
       .catch(error => console.log(error));
     }
+
+    // Show the navbar when the component unmounts
+    return () => {
+      if (navbar) {
+        navbar.classList.remove('hidden-navbar');
+      }
+    };
   }, [postid]);
 
   const fetchPostOwner = async (ownerUsername) => {
@@ -84,7 +105,7 @@ export default function PostPage() {
   };
 
   const handleShowCaption = () => {
-    setShowCaption(!showCaption);
+    setIsModalOpen(true); // Open the modal
   };
 
   const handleUpdateCaption = async (e) => {
@@ -123,29 +144,16 @@ export default function PostPage() {
 
   return (
     <>
-      <div className="exit-button">
-        <button onClick={handleExit}>Back</button>
+      <div className="post-page-exit-button" onClick={handleExit}>
+        <img src={backButtonImage} alt="Back" />
       </div>
-      <div className="edit-button">
+      <div className="post-page-edit-button">
         {session && session.username === username && (
           <>
             <button onClick={handleEdit}>Edit Post</button>
             {showEdit && (
               <div className="post-buttons">
                 <button onClick={handleShowCaption}>Edit Caption</button>
-                {showCaption && (
-                  <div>
-                    <label htmlFor="caption">Caption:</label>
-                    <input
-                      type="text"
-                      id="caption"
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Enter caption"
-                    />
-                    <button onClick={handleUpdateCaption}>Submit</button>
-                  </div>
-                )}
                 <button onClick={handleDelete}>Delete Post</button>
               </div>
             )}
@@ -156,12 +164,12 @@ export default function PostPage() {
         {post ? (
           <>
             {post.image_url && (
-              <div>
+              <div className="post-image">
                 <img src={`http://localhost:5000/${post.image_url}`} alt="Post" />
               </div>
             )}
             {post.video_url && !post.image_url && (
-              <div>
+              <div className="post-video">
                 <video controls>
                   <source src={`http://localhost:5000/${post.video_url}`} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -178,7 +186,7 @@ export default function PostPage() {
                 )}
               </div>
             )}
-            <div>
+            <div className="post-details">
               <p>{post.caption}</p>
               <p>
                 {new Date(post.created).toLocaleDateString('en-US', {
@@ -198,6 +206,21 @@ export default function PostPage() {
           <p>Loading...</p>
         )}
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h2>Edit Caption</h2>
+        <form onSubmit={handleUpdateCaption}>
+          <label htmlFor="caption">Caption:</label>
+          <input
+            type="text"
+            id="caption"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Enter caption"
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </Modal>
     </>
   );
 }

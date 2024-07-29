@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSession } from '../hooks/SessionContext.js';
+import '../styles/EditProfile.css';
 
 const EditProfile = () => {
   const { username } = useParams();
@@ -142,6 +143,25 @@ const EditProfile = () => {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmitProfile}>
         <label>
+          Profile Picture:
+          {previewURL && (
+            <img
+              src={previewURL}
+              alt="Profile Preview"
+              style={{ width: '100px', height: '100px', objectFit: 'cover', cursor: 'pointer' }}
+              onClick={handleProfilePictureClick}
+            />
+          )}
+          <input
+            type="file"
+            name="profilePicture"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+          />
+        </label>
+        <br />
+        <label>
           Fullname:
           <input
             type="text"
@@ -168,25 +188,6 @@ const EditProfile = () => {
             value={user.bio}
             onChange={handleChange}
             placeholder="Enter your bio"
-          />
-        </label>
-        <br />
-        <label>
-          Profile Picture:
-          {previewURL && (
-            <img
-              src={previewURL}
-              alt="Profile Preview"
-              style={{ width: '100px', height: '100px', objectFit: 'cover', cursor: 'pointer' }}
-              onClick={handleProfilePictureClick}
-            />
-          )}
-          <input
-            type="file"
-            name="profilePicture"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            style={{ display: 'none' }}
           />
         </label>
         <br />

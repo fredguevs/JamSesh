@@ -1,0 +1,80 @@
+/* NavBar.css */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.navbar-logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.navbar-menu button {
+  background: none;
+  border: none;
+  margin: 0 10px;
+  font-size: 1em;
+  cursor: pointer;
+  color: #333;
+}
+
+.navbar-menu button:hover {
+  color: #007BFF;
+}
+
+.navbar-toggle {
+  background: none;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  display: none; /* Hide the menu toggle button by default */
+}
+
+@media (max-width: 768px) {
+  .navbar-menu {
+    display: none; /* Hide the menu by default on mobile */
+  }
+
+  .navbar-menu.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+  }
+
+  .navbar-toggle {
+    display: block; /* Show the menu toggle button on mobile */
+  }
+
+  .navbar-menu button {
+    margin: 10px 0;
+  }
+}

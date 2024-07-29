@@ -9,6 +9,7 @@ import EditProfile from './pages/EditProfile.js';
 import SearchPage from './pages/Search.js';
 import PostPage from './pages/Post.js';
 import AudioPage from './pages/Audio.js';
+import HomePage from './pages/HomePage.js';
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
       <SessionProvider>
         <AppHeader />
         <Routes>
+          <Route exact path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/user/:username" element={<UserProfile />} />
           <Route path="/edit-profile/:username" element={<EditProfile />} />

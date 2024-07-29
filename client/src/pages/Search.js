@@ -2,6 +2,7 @@ import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
+import '../styles/SearchPage.css';
 
 //TODO:"" make this more responsive
 

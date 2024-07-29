@@ -1,0 +1,219 @@
+/* UserPage.css */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fafafa;
+}
+
+.user-page-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.user-page {
+  width: 90%;
+  max-width: 1200px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.top-right-buttons {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.edit-button,
+.create-button {
+  margin-left: 10px;
+}
+
+.edit-button button,
+.create-button button,
+.new-buttons button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.new-buttons {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: none;
+  flex-direction: column;
+}
+
+.new-buttons.active {
+  display: flex;
+  z-index: 10;
+}
+
+.preview-container.active {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.preview-close {
+  cursor: pointer;
+  font-size: 20px;
+  color: red;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.UserHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.Profile-body {
+  text-align: center;
+}
+
+.Profile-body img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.UserHeader h1 {
+  font-size: 24px;
+  margin: 10px 0;
+}
+
+.UserHeader h2 {
+  font-size: 18px;
+  color: gray;
+  margin: 5px 0;
+}
+
+.UserHeader h4 {
+  font-size: 16px;
+  color: #666;
+  margin: 5px 0;
+}
+
+.Following {
+  margin-top: 20px;
+}
+
+.Following button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.user-nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.user-nav button {
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.user-nav button.active {
+  border-bottom: 2px solid #007aff;
+}
+
+.UserPhotos,
+.UserAudios {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.Post,
+.Audio {
+  margin: 10px;
+  cursor: pointer;
+}
+
+.Post img,
+.Audio img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.Audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.audio-display-title {
+  text-align: center;
+}
+
+.preview-image {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.preview-video {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.preview-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-audio-player {
+  width: 100%;
+}
+
+.audio-title,
+#caption {
+  margin-top: 10px;
+  width: 100%;
+}
+
+#title,
+#caption {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-top: 5px;
+}

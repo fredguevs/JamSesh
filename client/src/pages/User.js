@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSession } from '../hooks/SessionContext';
 import axios from 'axios';
+import '../styles/UserPage.css';
 
 export default function UserPage() {
   const [showPosts, setShowPosts] = useState(true);
@@ -9,7 +10,7 @@ export default function UserPage() {
   const [showCreateOptions, setShowCreateOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
-  const [audioTitle, setAudioTitle] = useState(null);
+  const [audioTitle, setAudioTitle] = useState('');
   const [caption, setCaption] = useState('');
   const [user, setUser] = useState({});
   const [following, setFollowing] = useState(false);
@@ -118,7 +119,7 @@ export default function UserPage() {
         });
         console.log('Audio uploaded:', response.data);
         fetchAudios();
-        
+        handleClosePreview();
       }
       catch (error) {
         console.error('Error uploading audio:', error);
@@ -207,160 +208,176 @@ export default function UserPage() {
     }
   }
 
+  function handleClosePreview() {
+    setPreviewURL(null);
+    setSelectedFile(null);
+  }
+
   return (
-    <>
-      {session && session.username === user.username && (
-        <div className='edit-button'>
-          <button onClick={handleEditProfile}>Edit Profile</button>
-        </div>
-      )}
-      {session && session.username === user.username && (
-        <div className='create-button'>
-          <button onClick={handleCreate}>Create</button>
-          {showCreateOptions && (
-            <div className='new-buttons'>
-              <button onClick={handleNewPostClick}>New Post</button>
-              <button onClick={handleNewAudioClick}>New Audio</button>
+    <div className="user-page-container">
+      <div className="user-page">
+        {session && session.username === user.username && (
+          <div className="top-right-buttons">
+            <div className="edit-button">
+              <button onClick={handleEditProfile}>Edit Profile</button>
             </div>
-          )}
-          <input
-            type="file"
-            name="file"
-            ref={postFileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          <input
-            type="file"
-            name="audio"
-            ref={audioFileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-        </div>
-      )}
-      {previewURL && (
-        <div className="preview-container">
-          <h2>Preview</h2>
-          {selectedFile.type.startsWith('image/') && (
-            <img src={previewURL} alt="Preview" className="preview-image" />
-          )}
-          {selectedFile.type.startsWith('video/') && (
-            <video controls src={previewURL} className="preview-video" />
-          )}
-          {selectedFile.type.startsWith('audio/') && (
-            <>
-              <audio controls src={previewURL} className="preview-audio" />
-              <div className='audio-title'>
-                <label htmlFor="title">Title:</label>
-                <input
-                  type="text"
-                  id="title"
-                  value={audioTitle}
-                  onChange={(e) => setAudioTitle(e.target.value)}
-                  placeholder="Enter title"
-                />
+            <div className="create-button">
+              <button onClick={handleCreate}>Create</button>
+              <div className={`new-buttons ${showCreateOptions ? 'active' : ''}`}>
+                <button onClick={handleNewPostClick}>New Post</button>
+                <button onClick={handleNewAudioClick}>New Audio</button>
               </div>
-            </>
-          )}
-          <div>
-            <label htmlFor="caption">Caption:</label>
-            <input
-              type="text"
-              id="caption"
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Enter caption"
-            />
-          </div>
-          {selectedFile.type.startsWith('image/') || selectedFile.type.startsWith('video/') ? (
-            <button onClick={handleUploadPost}>Submit</button>
-          ) : (
-            <button onClick={handleUploadAudio}>Submit</button>
-          )}
-        </div>
-      )}
-      <div className='UserHeader'>
-        <div className='Profile-body'>
-          {user.profile_picture_url ? (
-            <>
-              <img 
-                src={`http://localhost:5000/${user.profile_picture_url}`} 
-                alt={`${user.username}'s profile`} 
-                onError={handleImageError}
+              <input
+                type="file"
+                name="file"
+                ref={postFileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
               />
-            </>
-          ) : (
-            <p>No profile picture available</p>
-          )}
-          <h1>{user.username}</h1>
-          <h2>{user.fullname}</h2>
-          <h4>{user.bio}</h4>
-        </div>
-        <div className='Following'>
-          {session && session.username !== user.username &&  (
+              <input
+                type="file"
+                name="audio"
+                ref={audioFileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+            </div>
+          </div>
+        )}
+        {previewURL && (
+          <div className="preview-container active">
+            <span className="preview-close" onClick={handleClosePreview}>&times;</span>
+            <h2>Preview</h2>
+            {selectedFile.type.startsWith('image/') && (
+              <img src={previewURL} alt="Preview" className="preview-image" />
+            )}
+            {selectedFile.type.startsWith('video/') && (
+              <video controls src={previewURL} className="preview-video" />
+            )}
+            {selectedFile.type.startsWith('audio/') && (
+              <div className="preview-audio">
+                <audio controls src={previewURL} className="preview-audio-player" />
+                <div className="audio-title">
+                  <label htmlFor="title">Title:</label>
+                  <input
+                    type="text"
+                    id="title"
+                    value={audioTitle}
+                    onChange={(e) => setAudioTitle(e.target.value)}
+                    placeholder="Enter title"
+                  />
+                </div>
+              </div>
+            )}
             <div>
-              <button onClick={handleFollow}>
-                {following ? "Following" : "Follow"}
-              </button>
+              <label htmlFor="caption">Caption:</label>
+              <input
+                type="text"
+                id="caption"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Enter caption"
+              />
             </div>
-          )}
+            {selectedFile.type.startsWith('image/') || selectedFile.type.startsWith('video/') ? (
+              <button onClick={handleUploadPost}>Submit</button>
+            ) : (
+              <button onClick={handleUploadAudio}>Submit</button>
+            )}
+          </div>
+        )}
+        <div className="UserHeader">
+          <div className="Profile-body">
+            {user.profile_picture_url ? (
+              <>
+                <img
+                  src={`http://localhost:5000/${user.profile_picture_url}`}
+                  alt={`${user.username}'s profile`}
+                  onError={handleImageError}
+                />
+              </>
+            ) : (
+              <p>No profile picture available</p>
+            )}
+            <h1>{user.username}</h1>
+            <h2>{user.fullname}</h2>
+            <h4>{user.bio}</h4>
+          </div>
+          <div className="Following">
+            {session && session.username !== user.username && (
+              <div>
+                <button onClick={handleFollow}>
+                  {following ? "Following" : "Follow"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div>
-        <button onClick={handleDisplayPosts}>Recent</button>
-        <button onClick={handleDisplayAudios}>Tracks</button>
-      </div>
+        <div className="user-nav">
+          <button
+            onClick={handleDisplayPosts}
+            className={showPosts ? 'active' : ''}
+          >
+            Recent
+          </button>
+          <button
+            onClick={handleDisplayAudios}
+            className={showAudios ? 'active' : ''}
+          >
+            Tracks
+          </button>
+        </div>
 
-      {showPosts && (
-        <>
-          {user.posts && (
-            <div className='UserPhotos'>
-              <div className='Posts'>
-                {user.posts.map(post => (
-                   <div key={post.postid} className='Post' onClick={() => handlePostClick(post.postid)}>
-                   {post.image_url && (
-                     <img 
-                       src={`http://localhost:5000/${post.image_url}`} 
-                       alt="Post" 
-                       onError={handleImageError} 
-                     />
-                   )}
-                   {post.video_url && (
-                     <div className='video-thumbnail'>
-                      <video 
-                        src={`http://localhost:5000/${post.video_url}`}
-                        style={{ pointerEvents: 'none' }} // Disable video controls
-                      />
+        {showPosts && (
+          <>
+            {user.posts && (
+              <div className="UserPhotos">
+                <div className="Posts">
+                  {user.posts.map(post => (
+                    <div key={post.postid} className="Post" onClick={() => handlePostClick(post.postid)}>
+                      {post.image_url && (
+                        <img
+                          src={`http://localhost:5000/${post.image_url}`}
+                          alt="Post"
+                          onError={handleImageError}
+                        />
+                      )}
+                      {post.video_url && (
+                        <div className="video-thumbnail">
+                          <video
+                            src={`http://localhost:5000/${post.video_url}`}
+                            style={{ pointerEvents: 'none' }} // Disable video controls
+                          />
+                        </div>
+                      )}
                     </div>
-                   )}
-                 </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
 
-      {showAudios && (
-        <>
-          {user.audios && (
-            <div className='UserAudios'>
-              <div className='Audios'>
-                {user.audios.map(audio => (
-                  <div key={audio.id} className='Audio' onClick={() => handleAudioClick(audio.audioid)}>
-                    <div className='audio-display-title'>
-                      <p>{audio.title}</p>
+        {showAudios && (
+          <>
+            {user.audios && (
+              <div className="UserAudios">
+                <div className="Audios">
+                  {user.audios.map(audio => (
+                    <div key={audio.id} className="Audio" onClick={() => handleAudioClick(audio.audioid)}>
+                      <div className="audio-display-title">
+                        <p>{audio.title}</p>
+                      </div>
+                      <audio controls src={`http://localhost:5000/${audio.url}`} />
                     </div>
-                    <audio controls src={`http://localhost:5000/${audio.url}`} />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
-    </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
